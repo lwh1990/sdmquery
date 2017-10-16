@@ -1,5 +1,5 @@
-#include <stdio.h>
-#include <stdlib.h>
+#include <iostream>
+#include <cstdlib>
 #include <mpi.h>
 #include <pnetcdf.h>
 #include "utility.h"
@@ -18,7 +18,7 @@ int main(int argc, char **argv)
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
     MPI_Comm_size(MPI_COMM_WORLD, &nprocs);
 
-    sprintf(filename, "/Users/liangweihao/Downloads/dataset/median.nc");
+    sprintf(filename, "/Users/liangweihao/Downloads/dataset/synthetic.nc");
     err = ncmpi_open(MPI_COMM_WORLD, filename, NC_NOWRITE, MPI_INFO_NULL, &ncid);
 
     err = ncmpi_inq_dimid(ncid, "longitude", &dimid[2]);
@@ -35,9 +35,12 @@ int main(int argc, char **argv)
    
     float sum = 0.0;
     short out[5];int l, r, t[2]; float predict, actual;
-    l = 30000, r = 32000;
+    gen_rand_range(t,-30000,30000);
+    l = t[0]; r = t[1];
+    //l = -20000, r = 10000;
     for(j = 0; j < global_nz; j++)
     {
+    std::cout <<"l: "<<l<<" r: "<<r<<std::endl;
     start[0] = j;
     start[1] = 0;
     start[2] = 0;

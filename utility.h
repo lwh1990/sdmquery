@@ -1,7 +1,7 @@
-#include <stdio.h>
-#include <stdlib.h>
+#include <iostream>
+#include <cstdlib>
 #include <pnetcdf.h>
-#include <math.h>
+#include <cmath>
 
 void check_err(int err);
 
