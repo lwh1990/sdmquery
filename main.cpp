@@ -18,7 +18,7 @@ int main(int argc, char **argv)
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
     MPI_Comm_size(MPI_COMM_WORLD, &nprocs);
 
-    sprintf(filename, "/Users/liangweihao/Downloads/dataset/synthetic.nc");
+    sprintf(filename, "/Users/liangweihao/Downloads/dataset/small.nc");
     err = ncmpi_open(MPI_COMM_WORLD, filename, NC_NOWRITE, MPI_INFO_NULL, &ncid);
 
     err = ncmpi_inq_dimid(ncid, "longitude", &dimid[2]);
@@ -35,26 +35,26 @@ int main(int argc, char **argv)
    
     float sum = 0.0;
     short out[5];int l, r, t[2]; float predict, actual;
-    gen_rand_range(t,-30000,30000);
-    l = t[0]; r = t[1];
+   // gen_rand_range(t,,30000);
+    l = 0; r = 3000;
     //l = -20000, r = 10000;
-    for(j = 0; j < global_nz; j++)
+    for(j = 0; j < global_ny; j++)
     {
-    std::cout <<"l: "<<l<<" r: "<<r<<std::endl;
-    start[0] = j;
-    start[1] = 0;
+        std::cout <<"l: "<<l<<" r: "<<r<<std::endl;
+    start[0] = 0;
+    start[1] = j;
     start[2] = 0;
     count[0] = 1;
-    count[1] = global_ny;
+    count[1] = 1;
     count[2] = global_nx;
 
-    buf = (short* )malloc(global_nx * global_ny * sizeof(short));
+    buf = (short* )malloc(global_nx * sizeof(short));
     
     err = ncmpi_get_vara_short_all(ncid, varid, start, count, buf);
     check_err(err);
 
     t1 = MPI_Wtime();
-    calculate_5number(buf, global_nx * global_ny, out);
+    calculate_5number(buf, global_nx , out);
     t2 = MPI_Wtime();
     printf("build 5number time=%f\n", t2-t1);
     printf("%d %d %d %d %d\n", out[0], out[1], out[2], out[3], out[4]);
@@ -65,18 +65,18 @@ int main(int argc, char **argv)
     printf("predict ratio: %f\n", predict);
 
     int c = 0;
-    for(i = 0; i < global_nx*global_ny; i++)
+    for(i = 0; i < global_nx; i++)
     {
         if(buf[i] < r && buf[i] > l) c++;
     }
-    actual = c*1.0/(global_nx*global_ny);
+    actual = c*1.0/(global_nx);
     printf("actual ratio: %f\n", actual);
-    printf("diff : %f\n", actual-predict);
+    printf("diff : %f\n", (actual-predict)*100);
 
     if(actual > predict)  sum += actual - predict;
     else sum += predict -actual;
     }
-    printf("average diff: %f\n", sum / global_nz);
+    printf("average diff: %f\n", sum / global_nz *100);
 
     err = ncmpi_close(ncid);
     MPI_Finalize();
